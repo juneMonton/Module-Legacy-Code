@@ -29,9 +29,9 @@ Self checklist
 - [ ] I have tested my changes
 - [ ] My changes follow the [style guide](https://curriculum.codeyourfuture.io/guides/reviewing/style-guide/)
 
-## Task ID
+## Task code
 
-Replace this line with the Task ID (e.g. CYF-0000).
+Replace this line with the Task code (e.g. CYF-0000).
 
 ## Changelist
 
