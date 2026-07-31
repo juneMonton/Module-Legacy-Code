@@ -1,0 +1,42 @@
+<!--
+
+You must title your PR like this:
+
+Region | Cohort | FirstName LastName | Sprint | Assignment Title
+
+For example,
+
+London | 25-ITP-May | Carol Owen | Sprint 1 | Alarm Clock
+
+Fill in the template below - remove any sections that don't apply.
+
+Complete the self checklist - replace each empty box in the checklist [ ] with a [x].
+
+Add the label "Needs Review" and you will get review.
+
+Respond to volunteer reviews until the volunteer marks it as "Complete".
+
+Please note: if the PR template is not filled as described above, an automatic GitHub bot will give feedback in the "Conversation" tab of the pull request and not allow the "Needs Review" label to be added until it's fixed.
+
+-->
+
+## Learners, PR Template
+
+Self checklist
+
+- [ ] I have titled my PR with Region | Cohort | FirstName LastName | Sprint | Assignment Title
+- [ ] My changes meet the requirements of the task
+- [ ] I have tested my changes
+- [ ] My changes follow the [style guide](https://curriculum.codeyourfuture.io/guides/reviewing/style-guide/)
+
+## Task ID
+
+Replace this line with the Task ID (e.g. CYF-0000).
+
+## Changelist
+
+Briefly explain your PR.
+
+## Questions
+
+Ask any questions you have for your reviewer. You must remove this section if you have no questions.
