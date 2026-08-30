@@ -35,7 +35,7 @@ HASHTAG_PATTERN = re.compile(r"\B#(\w+)")
 
 # The columns every bloom query selects, in the order _bloom_from_row expects.
 BLOOM_COLUMNS = """blooms.id, users.username, blooms.content, blooms.send_timestamp,
-              (SELECT COUNT(*) FROM reblooms WHERE reblooms.bloom_id = blooms.id)"""
+              (SELECT COUNT(*) FROM reblooms AS counted WHERE counted.bloom_id = blooms.id)"""
 
 
 def _bloom_from_row(row) -> Bloom:
