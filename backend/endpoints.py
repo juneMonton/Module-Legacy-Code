@@ -203,6 +203,24 @@ def send_bloom():
     )
 
 
+@jwt_required()
+def do_rebloom():
+    type_check_error = verify_request_fields({"bloom_id": int})
+    if type_check_error is not None:
+        return type_check_error
+
+    bloom_id = request.json["bloom_id"]
+    if blooms.get_bloom(bloom_id) is None:
+        return make_response((f"Cannot rebloom {bloom_id} - bloom does not exist", 404))
+
+    blooms.add_rebloom(rebloomer=get_current_user(), bloom_id=bloom_id)
+    return jsonify(
+        {
+            "success": True,
+        }
+    )
+
+
 def get_bloom(id_str):
     try:
         id_int = int(id_str)
@@ -231,12 +249,18 @@ def home_timeline():
     # Get the current user's own blooms
     own_blooms = blooms.get_blooms_for_user(current_user.username, limit=50)
 
-    # Combine own blooms with followed blooms
-    all_blooms = followed_blooms + own_blooms
+    # Get the blooms anyone in this timeline has rebloomed
+    rebloomed_blooms = blooms.get_reblooms_for_users(
+        followed_users + [current_user.username], limit=50
+    )
 
-    # Sort by timestamp (newest first)
+    # Combine own blooms with followed and rebloomed blooms
+    all_blooms = followed_blooms + own_blooms + rebloomed_blooms
+
+    # Sort by timestamp (newest first), placing a rebloom by when it was
+    # rebloomed rather than when the original bloom was posted
     sorted_blooms = list(
-        sorted(all_blooms, key=lambda bloom: bloom.sent_timestamp, reverse=True)
+        sorted(all_blooms, key=lambda bloom: bloom.timeline_timestamp, reverse=True)
     )
 
     return jsonify(sorted_blooms)

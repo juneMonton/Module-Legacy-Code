@@ -212,6 +212,46 @@ async function postBloom(content) {
   }
 }
 
+/**
+ * Re-share someone's bloom. Reblooming is idempotent, so a repeat rebloom
+ * leaves the count where it is.
+ */
+async function rebloom(bloomId) {
+  try {
+    const data = await _apiRequest("/rebloom", {
+      method: "POST",
+      body: JSON.stringify({bloom_id: bloomId}),
+    });
+
+    if (data.success) await _refreshBloomLists();
+
+    return data;
+  } catch (error) {
+    // Error already handled by _apiRequest
+    return {success: false};
+  }
+}
+
+/**
+ * Reload whichever lists of blooms state is currently holding, so a changed
+ * rebloom count shows up on the view the user is actually looking at.
+ */
+async function _refreshBloomLists() {
+  const refreshes = [getBlooms()];
+
+  for (const profile of state.profiles) {
+    refreshes.push(getProfile(profile.username));
+  }
+  if (state.currentHashtag) {
+    refreshes.push(getBloomsByHashtag(state.currentHashtag));
+  }
+  if (state.singleBloomToShow) {
+    refreshes.push(getBloom(state.singleBloomToShow.id).catch(() => null));
+  }
+
+  await Promise.all(refreshes);
+}
+
 // ======= USER methods
 async function getProfile(username) {
   const endpoint = username ? `/profile/${username}` : "/profile";
@@ -292,6 +332,7 @@ const apiService = {
   getBlooms,
   postBloom,
   getBloomsByHashtag,
+  rebloom,
 
   // User methods
   getProfile,
