@@ -1,6 +1,11 @@
 from typing import Dict, Union
 from data import blooms
-from data.follows import follow, get_followed_usernames, get_inverse_followed_usernames
+from data.follows import (
+    follow,
+    get_followed_usernames,
+    get_inverse_followed_usernames,
+    unfollow,
+)
 from data.users import (
     UserRegistrationError,
     get_suggested_follows,
@@ -18,6 +23,7 @@ from flask_jwt_extended import (
 from datetime import timedelta
 
 MINIMUM_PASSWORD_LENGTH = 5
+MAXIMUM_BLOOM_LENGTH = 280
 
 
 def login():
@@ -151,14 +157,44 @@ def do_follow():
 
 
 @jwt_required()
+def do_unfollow(unfollow_username):
+    current_user = get_current_user()
+
+    unfollow_user = get_user(unfollow_username)
+    if unfollow_user is None:
+        return make_response(
+            (f"Cannot unfollow {unfollow_username} - user does not exist", 404)
+        )
+
+    unfollow(current_user, unfollow_user)
+    return jsonify(
+        {
+            "success": True,
+        }
+    )
+
+
+@jwt_required()
 def send_bloom():
     type_check_error = verify_request_fields({"content": str})
     if type_check_error is not None:
         return type_check_error
 
+    content = request.json["content"]
+    if len(content) > MAXIMUM_BLOOM_LENGTH:
+        return make_response(
+            (
+                {
+                    "success": False,
+                    "message": f"Blooms must be at most {MAXIMUM_BLOOM_LENGTH} characters long",
+                },
+                400,
+            )
+        )
+
     user = get_current_user()
 
-    blooms.add_bloom(sender=user, content=request.json["content"])
+    blooms.add_bloom(sender=user, content=content)
 
     return jsonify(
         {
