@@ -34,10 +34,14 @@ const createBloom = (template, bloom) => {
   return bloomFrag;
 };
 
+// A hashtag is the # and the word characters that follow it, and nothing else.
+// The backend indexes hashtags by the same rule, so the two must stay in step.
+const HASHTAG_PATTERN = /\B#\w+/g;
+
 function _formatHashtags(text) {
   if (!text) return text;
   return text.replace(
-    /\B#[^#]+/g,
+    HASHTAG_PATTERN,
     (match) => `<a href="/hashtag/${match.slice(1)}">${match}</a>`
   );
 }
