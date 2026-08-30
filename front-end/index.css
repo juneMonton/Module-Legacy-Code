@@ -215,6 +215,17 @@ dialog {
 }
 
 /* TIMELINE */
+.bloom__rebloom-attribution {
+  margin: 0;
+  font-size: 0.85em;
+  color: var(--accent);
+}
+
+.bloom__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .timeline__content {
   min-height: 80dvh;
   display: grid;
