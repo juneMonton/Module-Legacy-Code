@@ -19,6 +19,13 @@ You may want to run `python3 populate.py` to populate sample data.
 
 If you ever need to wipe the database, just delete `../db/pg_data` (and remember to set it up again after).
 
+### When the schema changes
+
+There is no migration tool, so a database created before a table was added to
+`db/schema.sql` won't have it. The `reblooms` table is the most recent addition.
+Either wipe the database as above and set it up again, or apply the missing
+`CREATE TABLE` from `db/schema.sql` by hand with `psql`.
+
 ### Each time
 
 1. In one terminal, run the database: `../db/run.sh` (you must have Docker installed and running).
