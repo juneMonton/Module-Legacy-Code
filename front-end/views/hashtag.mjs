@@ -17,7 +17,14 @@ import {createHeading} from "../components/heading.mjs";
 function hashtagView(hashtag) {
   destroy();
 
-  apiService.getBloomsByHashtag(hashtag);
+  // Fetching writes to state, which fires state-change, which runs the router,
+  // which calls this view again. Fetching unconditionally therefore loops
+  // forever, and each pass calls destroy(), so the page flashes blank on and
+  // off. Only fetch when state isn't already holding this hashtag's blooms.
+  const tag = hashtag.startsWith("#") ? hashtag.substring(1) : hashtag;
+  if (state.currentHashtag !== `#${tag}`) {
+    apiService.getBloomsByHashtag(tag);
+  }
 
   renderOne(
     state.isLoggedIn,
@@ -35,8 +42,8 @@ function hashtagView(hashtag) {
     createLogin
   );
   document
-    .querySelector("[data-action='login']")
-    ?.addEventListener("click", handleLogin);
+    .querySelector("[data-form='login']")
+    ?.addEventListener("submit", handleLogin);
 
   renderOne(
     state.currentHashtag,
