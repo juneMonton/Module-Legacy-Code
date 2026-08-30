@@ -21,6 +21,20 @@ class Bloom:
 HASHTAG_PATTERN = re.compile(r"\B#(\w+)")
 
 
+# The columns every bloom query selects, in the order _bloom_from_row expects.
+BLOOM_COLUMNS = "blooms.id, users.username, blooms.content, blooms.send_timestamp"
+
+
+def _bloom_from_row(row) -> Bloom:
+    bloom_id, sender_username, content, timestamp = row
+    return Bloom(
+        id=bloom_id,
+        sender=sender_username,
+        content=content,
+        sent_timestamp=timestamp,
+    )
+
+
 def add_bloom(*, sender: User, content: str) -> Bloom:
     # dict.fromkeys de-duplicates but keeps the order tags appear in. The
     # hashtags table is UNIQUE(hashtag, bloom_id), so a bloom that uses the same
@@ -63,7 +77,7 @@ def get_blooms_for_user(
 
         cur.execute(
             f"""SELECT
-              blooms.id, users.username, content, send_timestamp
+              {BLOOM_COLUMNS}
             FROM
               blooms INNER JOIN users ON users.id = blooms.sender_id
             WHERE
@@ -74,37 +88,19 @@ def get_blooms_for_user(
             """,
             kwargs,
         )
-        rows = cur.fetchall()
-        blooms = []
-        for row in rows:
-            bloom_id, sender_username, content, timestamp = row
-            blooms.append(
-                Bloom(
-                    id=bloom_id,
-                    sender=sender_username,
-                    content=content,
-                    sent_timestamp=timestamp,
-                )
-            )
-    return blooms
+        return [_bloom_from_row(row) for row in cur.fetchall()]
 
 
 def get_bloom(bloom_id: int) -> Optional[Bloom]:
     with db_cursor() as cur:
         cur.execute(
-            "SELECT blooms.id, users.username, content, send_timestamp FROM blooms INNER JOIN users ON users.id = blooms.sender_id WHERE blooms.id = %s",
+            f"SELECT {BLOOM_COLUMNS} FROM blooms INNER JOIN users ON users.id = blooms.sender_id WHERE blooms.id = %s",
             (bloom_id,),
         )
         row = cur.fetchone()
         if row is None:
             return None
-        bloom_id, sender_username, content, timestamp = row
-        return Bloom(
-            id=bloom_id,
-            sender=sender_username,
-            content=content,
-            sent_timestamp=timestamp,
-        )
+        return _bloom_from_row(row)
 
 
 def get_blooms_with_hashtag(
@@ -117,7 +113,7 @@ def get_blooms_with_hashtag(
     with db_cursor() as cur:
         cur.execute(
             f"""SELECT
-              blooms.id, users.username, content, send_timestamp
+              {BLOOM_COLUMNS}
             FROM
               blooms INNER JOIN hashtags ON blooms.id = hashtags.bloom_id INNER JOIN users ON blooms.sender_id = users.id
             WHERE
@@ -127,19 +123,7 @@ def get_blooms_with_hashtag(
             """,
             kwargs,
         )
-        rows = cur.fetchall()
-        blooms = []
-        for row in rows:
-            bloom_id, sender_username, content, timestamp = row
-            blooms.append(
-                Bloom(
-                    id=bloom_id,
-                    sender=sender_username,
-                    content=content,
-                    sent_timestamp=timestamp,
-                )
-            )
-    return blooms
+        return [_bloom_from_row(row) for row in cur.fetchall()]
 
 
 def make_limit_clause(limit: Optional[int], kwargs: Dict[Any, Any]) -> str:
