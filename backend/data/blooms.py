@@ -1,4 +1,5 @@
 import datetime
+import re
 
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
@@ -15,8 +16,16 @@ class Bloom:
     sent_timestamp: datetime.datetime
 
 
+# Must match the pattern the front end uses to turn hashtags into links,
+# otherwise blooms link to tags they were never indexed under.
+HASHTAG_PATTERN = re.compile(r"\B#(\w+)")
+
+
 def add_bloom(*, sender: User, content: str) -> Bloom:
-    hashtags = [word[1:] for word in content.split(" ") if word.startswith("#")]
+    # dict.fromkeys de-duplicates but keeps the order tags appear in. The
+    # hashtags table is UNIQUE(hashtag, bloom_id), so a bloom that uses the same
+    # tag twice would otherwise fail to insert.
+    hashtags = list(dict.fromkeys(HASHTAG_PATTERN.findall(content)))
 
     now = datetime.datetime.now(tz=datetime.UTC)
     bloom_id = int(now.timestamp() * 1000000)
